@@ -1,6 +1,12 @@
 const btnInvestigar = document.getElementById("btnInvestigar");
 const pregunta = document.getElementById("pregunta");
 
+const apiBaseUrl = window.RADAR_TIC_API_BASE_URL || (
+    window.location.hostname === "nicolelares.github.io"
+        ? "https://agente-investigador-tic-teal.vercel.app"
+        : ""
+);
+
 const actividad = document.getElementById("actividad");
 const estadoActual = document.getElementById("estadoActual");
 const previewContent = document.getElementById("previewContent");
@@ -33,7 +39,7 @@ async function investigar() {
 
     try {
         const respuesta = await fetch(
-            "/api/investigar",
+            `${apiBaseUrl}/api/investigar`,
             {
                 method: "POST",
                 headers: {
@@ -44,6 +50,16 @@ async function investigar() {
                 })
             }
         );
+
+        if (!respuesta.ok) {
+            throw new Error(
+                `El servidor de investigación respondió con un error (${respuesta.status}).`
+            );
+        }
+
+        if (!respuesta.headers.get("Content-Type")?.includes("text/event-stream")) {
+            throw new Error("El servidor no devolvió un flujo de investigación válido.");
+        }
 
         if (!respuesta.body) {
             throw new Error(

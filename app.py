@@ -15,6 +15,17 @@ app = Flask(
 client = OpenAI(api_key=OPENAI_API_KEY)
 
 
+@app.after_request
+def permitir_github_pages(respuesta):
+    if request.path == "/api/investigar":
+        respuesta.vary.add("Origin")
+        if request.headers.get("Origin") == "https://nicolelares.github.io":
+            respuesta.headers["Access-Control-Allow-Origin"] = "https://nicolelares.github.io"
+            respuesta.headers["Access-Control-Allow-Methods"] = "POST, OPTIONS"
+            respuesta.headers["Access-Control-Allow-Headers"] = "Content-Type"
+    return respuesta
+
+
 @app.route("/")
 def inicio():
     return render_template("index.html")
